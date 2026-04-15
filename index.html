@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Modern iOS Energy Calculator</title>
+  <style>
+    :root{
+      --ios-blue:#69b7ff;
+      --ios-blue-strong:#3d95f5;
+      --ios-green:#8bd8a5;
+      --ios-green-strong:#59b978;
+      --ios-red:#ff6b63;
+      --ios-yellow:#ffe08a;
+      --bg:#f4fbff;
+      --bg-2:#eefaf2;
+      --card:rgba(255,255,255,.78);
+      --card-strong:rgba(255,255,255,.92);
+      --line:rgba(96,133,128,.16);
+      --line-soft:rgba(255,255,255,.72);
+      --text:#14303a;
+      --sub:#68808a;
+      --shadow:0 14px 34px rgba(75, 133, 122, .10);
+      --shadow-soft:0 6px 18px rgba(95, 150, 139, .08);
+      --r-xl:30px;
+      --r-lg:24px;
+      --r-md:18px;
+      --r-sm:14px;
+    }
+
+    *{box-sizing:border-box}
+    html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+    body{
+      margin:0;
+      min-height:100vh;
+      background:
+        radial-gradient(circle at top left, rgba(105,183,255,.22), transparent 34%),
+        radial-gradient(circle at top right, rgba(139,216,165,.22), transparent 30%),
+        linear-gradient(180deg, #f8fdff 0%, #eef8ff 44%, #eefaf2 100%);
+      color:var(--text);
+      font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Helvetica Neue",Arial,sans-serif;
+    }
+
+    .app{
+      width:100%;
+      max-width:430px;
+      min-height:100vh;
+      margin:0 auto;
+      padding:calc(10px + env(safe-area-inset-top)) 12px calc(28px + env(safe-area-inset-bottom));
+    }
+
+    .topbar{
+      position:sticky;
+      top:0;
+      z-index:10;
+      padding:2px 0 12px;
+      backdrop-filter:blur(24px);
+      -webkit-backdrop-filter:blur(24px);
+    }
+
+    .topbar-inner{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:12px 14px;
+      border-radius:22px;
+      background:linear-gradient(180deg, rgba(255,255,255,.78) 0%, rgba(244,252,255,.72) 100%);
+      border:1px solid rgba(255,255,255,.82);
+      box-shadow:var(--shadow-soft);
+    }
+
+    .topbar-title{
+      font-size:17px;
+      font-weight:700;
+      letter-spacing:-.03em;
+    }
+
+    .topbar-badge{
+      padding:8px 11px;
+      border-radius:999px;
+      background:rgba(0,122,255,.1);
+      color:var(--ios-blue);
+      font-size:11px;
+      font-weight:800;
+      letter-spacing:.04em;
+    }
+
+    .hero{
+      padding:8px 4px 16px;
+    }
+
+    .hero-kicker{
+      margin:0 0 8px;
+      color:var(--ios-blue-strong);
+      font-size:13px;
+      font-weight:700;
+      letter-spacing:-.02em;
+    }
+
+    .hero h1{
+      margin:0;
+      font-size:35px;
+      line-height:1.01;
+      letter-spacing:-.065em;
+      font-weight:800;
+    }
+
+    .hero p{
+      margin:10px 0 0;
+      color:var(--sub);
+      font-size:15px;
+      line-height:1.48;
+      letter-spacing:-.015em;
+    }
+
+    .hero-card,
+    .section{
+      border-radius:var(--r-xl);
+      background:linear-gradient(180deg, rgba(255,255,255,.82) 0%, rgba(247,253,251,.84) 100%);
+      border:1px solid var(--line-soft);
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(24px) saturate(170%);
+      -webkit-backdrop-filter:blur(24px) saturate(170%);
+    }
+
+    .hero-card{
+      padding:16px;
+      margin-bottom:14px;
+    }
+
+    .hero-note{
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      padding:14px;
+      border-radius:22px;
+      background:linear-gradient(180deg, rgba(0,122,255,.09) 0%, rgba(0,122,255,.05) 100%);
+      color:#0a63c9;
+      font-size:13px;
+      line-height:1.45;
+      font-weight:600;
+    }
+
+    .section{
+      padding:16px;
+      margin-bottom:14px;
+    }
+
+    .section-head{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:14px;
+    }
+
+    .section-head h2{
+      margin:0;
+      font-size:20px;
+      line-height:1.12;
+      letter-spacing:-.04em;
+      font-weight:760;
+    }
+
+    .section-head p{
+      margin:5px 0 0;
+      color:var(--sub);
+      font-size:13px;
+      line-height:1.45;
+      letter-spacing:-.01em;
+    }
+
+    .status-pill{
+      flex:0 0 auto;
+      padding:8px 12px;
+      border-radius:999px;
+      background:rgba(52,199,89,.12);
+      color:#1c9b42;
+      font-size:11px;
+      font-weight:800;
+      letter-spacing:.04em;
+      text-transform:uppercase;
+    }
+
+    .group-list{
+      display:grid;
+      gap:12px;
+    }
+
+    .group{
+      padding:12px;
+      border-radius:24px;
+      background:linear-gradient(180deg, rgba(240,250,255,.82) 0%, rgba(241,253,246,.82) 100%);
+      border:1px solid rgba(255,255,255,.75);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.7);
+    }
+
+    .group-title{
+      margin:0 0 10px;
+      color:var(--sub);
+      font-size:11px;
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+    }
+
+    .stack{display:grid;gap:12px}
+    .split{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+    .field label{
+      display:block;
+      margin:0 0 7px;
+      font-size:13px;
+      font-weight:700;
+      line-height:1.3;
+      letter-spacing:-.01em;
+      color:#1c1c1e;
+    }
+
+    .field input,
+    .field select{
+      width:100%;
+      min-height:54px;
+      padding:15px 16px;
+      border-radius:18px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.94);
+      color:var(--text);
+      font-size:16px;
+      letter-spacing:-.015em;
+      font-family:inherit;
+      appearance:none;
+      -webkit-appearance:none;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.85);
+    }
+
+    .field select{
+      -webkit-appearance:menulist;
+      appearance:menulist;
+    }
+
+    .field input:focus,
+    .field select:focus{
+      outline:none;
+      border-color:rgba(105,183,255,.55);
+      box-shadow:0 0 0 4px rgba(105,183,255,.14);
+    }
+
+    .readonly{
+      background:#f6f7fb !important;
+      color:#6e6e73 !important;
+    }
+
+    .small{
+      margin-top:6px;
+      color:var(--sub);
+      font-size:12px;
+      line-height:1.42;
+      letter-spacing:-.01em;
+    }
+
+    .actions{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+      margin-top:14px;
+    }
+
+    button{
+      width:100%;
+      min-height:54px;
+      border:0;
+      border-radius:20px;
+      padding:15px 16px;
+      font-size:16px;
+      font-weight:760;
+      letter-spacing:-.03em;
+      font-family:inherit;
+      cursor:pointer;
+      transition:transform .12s ease, box-shadow .12s ease, opacity .12s ease;
+    }
+
+    button:active{transform:scale(.985)}
+
+    .primary-btn{
+      background:linear-gradient(135deg, #79c5ff 0%, #70d9d2 52%, #8adca9 100%);
+      color:#fff;
+      box-shadow:0 14px 26px rgba(97, 185, 167, .24);
+    }
+
+    .secondary-btn{
+      background:linear-gradient(180deg, rgba(139,216,165,.18) 0%, rgba(105,183,255,.10) 100%);
+      color:#21424b;
+    }
+
+    .stats{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+      margin-top:14px;
+    }
+
+    .stat{
+      min-width:0;
+      padding:15px;
+      border-radius:24px;
+      background:linear-gradient(180deg, rgba(242,251,255,.95) 0%, rgba(241,252,246,.95) 100%);
+      border:1px solid rgba(255,255,255,.82);
+      box-shadow:var(--shadow-soft);
+    }
+
+    .stat .label{
+      margin-bottom:6px;
+      color:var(--sub);
+      font-size:11px;
+      line-height:1.3;
+      font-weight:800;
+      letter-spacing:.06em;
+      text-transform:uppercase;
+    }
+
+    .stat .value{
+      color:#111114;
+      font-size:22px;
+      line-height:1.15;
+      font-weight:820;
+      letter-spacing:-.04em;
+      word-break:break-word;
+    }
+
+    .formula{
+      margin-top:14px;
+      padding:13px 14px;
+      border-radius:20px;
+      background:linear-gradient(180deg, rgba(105,183,255,.12) 0%, rgba(139,216,165,.16) 100%);
+      color:#3f6d5d;
+      font-size:12px;
+      line-height:1.5;
+      font-weight:650;
+    }
+
+    .saved-section{
+      background:#f4f6f1;
+      border:1px solid #d8e0cf;
+      box-shadow:none;
+      backdrop-filter:none;
+      -webkit-backdrop-filter:none;
+    }
+
+    .saved-section .section-head{
+      margin-bottom:16px;
+    }
+
+    .saved-section .section-head h2{
+      color:#000;
+      font-size:clamp(22px, 6vw, 34px);
+      font-weight:800;
+      letter-spacing:-.05em;
+    }
+
+    .saved-section .section-head p{
+      color:#000;
+      font-size:clamp(12px, 3.1vw, 15px);
+      line-height:1.45;
+      letter-spacing:-.02em;
+    }
+
+    .saved-section .status-pill{
+      display:none;
+    }
+
+    .saved-section .stat{
+      background:linear-gradient(180deg, rgba(241,250,252,.96) 0%, rgba(238,247,250,.96) 100%);
+      border:1px solid rgba(222,236,240,.95);
+      box-shadow:none;
+    }
+
+    .saved-table-shell{
+      overflow:hidden;
+      background:transparent;
+      border:0;
+      box-shadow:none;
+      border-radius:0;
+    }
+
+    .saved-table-shell .table-scroll{
+      overflow-x:visible;
+      -webkit-overflow-scrolling:auto;
+    }
+
+    .saved-data-table{
+      width:100%;
+      min-width:0;
+      border-collapse:collapse;
+      table-layout:fixed;
+      font-size:clamp(6.8px, 1.6vw, 8.8px);
+    }
+
+    .saved-data-table th{
+      padding:12px 3px;
+      background:#8fcf84;
+      color:#fff;
+      text-align:center;
+      font-size:clamp(5.8px, 1.28vw, 7.6px);
+      font-weight:800;
+      text-transform:none;
+      letter-spacing:-.01em;
+      line-height:1.05;
+      white-space:normal;
+      border-bottom:0;
+    }
+
+    .saved-data-table th:first-child{
+      text-align:left;
+      padding-left:12px;
+    }
+
+    .saved-data-table td{
+      padding:14px 3px;
+      background:transparent;
+      color:#27303f;
+      border-bottom:1px solid #dbe2d6;
+      vertical-align:middle;
+      text-align:center;
+      font-size:clamp(6.9px, 1.4vw, 8.4px);
+      letter-spacing:-.02em;
+    }
+
+    .saved-data-table tbody tr:last-child td{
+      border-bottom:none;
+    }
+
+    .saved-data-table td:first-child{
+      text-align:left;
+      padding-left:12px;
+      font-weight:700;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .saved-data-table td:nth-child(2),
+    .saved-data-table td:nth-child(3),
+    .saved-data-table td:nth-child(4),
+    .saved-data-table td:nth-child(5),
+    .saved-data-table td:nth-child(6),
+    .saved-data-table td:nth-child(7),
+    .saved-data-table td:nth-child(8){
+      white-space:nowrap;
+    }
+
+    .saved-data-table td:nth-child(8){
+      text-align:right;
+      padding-right:8px;
+      font-weight:800;
+    }
+
+    .saved-data-table td:nth-child(9){
+      text-align:center;
+      padding-left:4px;
+      padding-right:0;
+    }
+
+    .saved-data-table th:nth-child(4),
+    .saved-data-table th:nth-child(5),
+    .saved-data-table th:nth-child(6),
+    .saved-data-table th:nth-child(7),
+    .saved-data-table td:nth-child(4),
+    .saved-data-table td:nth-child(5),
+    .saved-data-table td:nth-child(6),
+    .saved-data-table td:nth-child(7){
+      letter-spacing:-.015em;
+    }
+
+    .saved-data-table th:nth-child(4),
+    .saved-data-table th:nth-child(5),
+    .saved-data-table th:nth-child(6),
+    .saved-data-table th:nth-child(7){
+      padding-left:4px;
+      padding-right:4px;
+    }
+
+    .saved-empty-row td{
+      padding:18px 14px;
+      text-align:center !important;
+      color:var(--sub);
+      font-size:13px;
+      font-weight:700;
+    }
+
+    .delete-btn{
+      width:18px;
+      min-width:18px;
+      min-height:18px;
+      height:18px;
+      padding:0;
+      border-radius:0;
+      background:transparent;
+      color:#6b7280;
+      font-size:clamp(11px, 3vw, 16px);
+      box-shadow:none;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      vertical-align:middle;
+    }
+
+    .delete-btn:hover{
+      background:transparent;
+      opacity:.75;
+    }
+
+    .footer-button{margin-top:14px}
+
+    @media (max-width:390px){
+      .app{padding-left:10px;padding-right:10px}
+      .hero h1{font-size:31px}
+      .split,.actions,.stats{grid-template-columns:1fr}
+      .section,.hero-card{padding:14px}
+      .stat .value{font-size:20px}
+      button,.field input,.field select{min-height:52px}
+
+      .saved-data-table th{
+        padding:11px 2px;
+      }
+
+      .saved-data-table td{
+        padding:13px 2px;
+      }
+
+      .saved-data-table th:first-child,
+      .saved-data-table td:first-child{
+        padding-left:8px;
+      }
+
+      .saved-data-table td:nth-child(8){
+        padding-right:4px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="topbar">
+      <div class="topbar-inner">
+        <div class="topbar-title">Energy Calculator</div>
+        <div class="topbar-badge">Apple UI</div>
+      </div>
+    </div>
+
+    <section class="hero">
+      <p class="hero-kicker">Utilities</p>
+      <h1>Appliance Energy Calculator</h1>
+      <p>Based on More Power PHP/kWh.</p>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <h2></h2>
+          <p>Choose a present or enter your own appliance details to calculate daily and monthly appliance energy costs.</p>
+        </div>
+        <div class="status-pill">Live</div>
+      </div>
+
+      <div class="group-list">
+        <div class="group">
+          <p class="group-title">Appliance</p>
+          <div class="stack">
+            <div class="field">
+              <label for="preset"></label>
+              <select id="preset">
+                <option value="manual">Manual Input</option>
+                <option value="0">LED Bulb</option>
+                <option value="1">Electric Fan</option>
+                <option value="2">Wifi Router</option>
+                <option value="3">Smart TV</option>
+                <option value="4">Refrigerator</option>
+                <option value="5">Washing Machine</option>
+                <option value="6">Aircon</option>
+                <option value="7">Electric Iron</option>
+              </select>
+              <div class="small">Choose Manual Input or select an appliance to auto-fill the fields.</div>
+            </div>
+
+            <div class="field">
+              <label for="name">Appliance Name</label>
+              <input id="name" type="text" placeholder="Custom Appliance" autocomplete="off">
+              <div class="small">Type the power in Watts. kW updates automatically.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="group">
+          <p class="group-title">Usage</p>
+          <div class="stack">
+            <div class="split">
+              <div class="field">
+                <label for="quantity">Quantity</label>
+                <input id="quantity" type="text" inputmode="numeric" value="1">
+              </div>
+              <div class="field">
+                <label for="watts">Power Rating (Watts)</label>
+                <input id="watts" type="text" inputmode="decimal" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Type Watts">
+              </div>
+            </div>
+
+            <div class="split">
+              <div class="field">
+                <label for="hours">Usage Hours per Day</label>
+                <input id="hours" type="text" inputmode="decimal" value="1">
+              </div>
+              <div class="field">
+                <label for="days">Days of Usage per Month</label>
+                <input id="days" type="text" inputmode="numeric" value="30">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="group">
+          <p class="group-title">Rate</p>
+          <div class="split">
+            <div class="field">
+              <label for="rate">Rate per kWh (PHP)</label>
+              <input id="rate" type="text" inputmode="decimal" value="11.68">
+            </div>
+            <div class="field">
+              <label for="kw">Power Rating (kW)</label>
+              <input id="kw" class="readonly" type="text" readonly tabindex="-1" placeholder="Auto calculated">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="primary-btn" id="addBtn" type="button">Calculate</button>
+        <button class="secondary-btn" id="clearBtn" type="button">Clear</button>
+      </div>
+
+      <div class="stats">
+        <div class="stat">
+          <div class="label">Daily Energy</div>
+          <div class="value" id="dailyKwh">0.000 kWh</div>
+        </div>
+        <div class="stat">
+          <div class="label">Daily Cost</div>
+          <div class="value" id="dailyCost">PHP 0.00</div>
+        </div>
+        <div class="stat">
+          <div class="label">Monthly Energy</div>
+          <div class="value" id="monthlyKwh">0.000 kWh</div>
+        </div>
+        <div class="stat">
+          <div class="label">Monthly Cost</div>
+          <div class="value" id="monthlyCost">PHP 0.00</div>
+        </div>
+      </div>
+
+      <div class="formula">Formula: Daily kWh = Quantity × (Watts ÷ 1000) × Hours per Day. Monthly kWh = Daily kWh × Days per Month.</div>
+    </section>
+
+    <section class="section saved-section">
+      <div class="section-head">
+        <div>
+          <h2>Saved Appliance List</h2>
+          <p>Saved on this device using your browser.</p>
+        </div>
+      </div>
+
+      <div class="saved-table-shell">
+        <div class="table-scroll">
+          <table class="saved-data-table">
+            <colgroup>
+              <col style="width:18%">
+              <col style="width:6%">
+              <col style="width:7%">
+              <col style="width:11%">
+              <col style="width:11%">
+              <col style="width:10%">
+              <col style="width:15%">
+              <col style="width:16%">
+              <col style="width:6%">
+            </colgroup>
+            <thead>
+              <tr>
+                <th>Appliance</th>
+                <th>QTY</th>
+                <th>kW</th>
+                <th>Hrs/Day</th>
+                <th>Days/Mo</th>
+                <th>kWh/Mo</th>
+                <th>Rate /KwH</th>
+                <th>Consumption (P)</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="resultBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="stats">
+        <div class="stat">
+          <div class="label">Total kWh/Mo</div>
+          <div class="value" id="totalDailyKwh">0.000 kWh</div>
+        </div>
+        <div class="stat">
+          <div class="label">Total Consumption</div>
+          <div class="value" id="totalMonthlyCost">PHP 0.00</div>
+        </div>
+      </div>
+
+      <div class="footer-button">
+        <button class="secondary-btn" id="clearTableBtn" type="button">Clear Saved List</button>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    (function () {
+      var STORAGE_KEY = 'simpleSafariEnergyList_cross_browser';
+      var presets = [
+        {name:'LED Bulb', quantity:6, watts:13, hours:8, days:30},
+        {name:'Electric Fan', quantity:2, watts:80, hours:6, days:30},
+        {name:'Wifi Router', quantity:1, watts:10, hours:24, days:30},
+        {name:'Smart TV', quantity:1, watts:170, hours:6, days:30},
+        {name:'Refrigerator', quantity:1, watts:190, hours:24, days:30},
+        {name:'Washing Machine', quantity:1, watts:2000, hours:0.357142857, days:30},
+        {name:'Aircon', quantity:1, watts:1200, hours:8, days:30},
+        {name:'Electric Iron', quantity:1, watts:1000, hours:0.666666667, days:30}
+      ];
+
+      var presetEl = document.getElementById('preset');
+      var nameEl = document.getElementById('name');
+      var quantityEl = document.getElementById('quantity');
+      var wattsEl = document.getElementById('watts');
+      var hoursEl = document.getElementById('hours');
+      var daysEl = document.getElementById('days');
+      var rateEl = document.getElementById('rate');
+      var kwEl = document.getElementById('kw');
+
+      var dailyKwhEl = document.getElementById('dailyKwh');
+      var dailyCostEl = document.getElementById('dailyCost');
+      var monthlyKwhEl = document.getElementById('monthlyKwh');
+      var monthlyCostEl = document.getElementById('monthlyCost');
+
+      var resultBody = document.getElementById('resultBody');
+      var totalDailyKwhEl = document.getElementById('totalDailyKwh');
+      var totalMonthlyCostEl = document.getElementById('totalMonthlyCost');
+
+      var addBtn = document.getElementById('addBtn');
+      var clearBtn = document.getElementById('clearBtn');
+      var clearTableBtn = document.getElementById('clearTableBtn');
+
+      var saved = [];
+
+      function fmt(num, digits){
+        var n = Number(num);
+        if (!isFinite(n)) { n = 0; }
+        return n.toLocaleString(undefined, {
+          minimumFractionDigits: digits,
+          maximumFractionDigits: digits
+        });
+      }
+
+      function parseNum(value){
+        if (value === undefined || value === null) return 0;
+        var raw = String(value);
+        raw = raw.replace(/,/g, '.');
+        raw = raw.replace(/[^0-9.\-]/g, '');
+        if (raw === '' || raw === '-' || raw === '.') return 0;
+        if (raw.indexOf('.') !== -1) {
+          var firstDot = raw.indexOf('.');
+          raw = raw.slice(0, firstDot + 1) + raw.slice(firstDot + 1).replace(/\./g, '');
+        }
+        var val = parseFloat(raw);
+        if (!isFinite(val) || isNaN(val) || val < 0) return 0;
+        return val;
+      }
+
+      function escapeHtml(str){
+        return String(str).replace(/[&<>"]/g, function (m) {
+          return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m];
+        });
+      }
+
+      function getCurrentValues(){
+        var watts = parseNum(wattsEl.value);
+        var kw = watts / 1000;
+        var quantity = parseNum(quantityEl.value) || 1;
+        var hours = parseNum(hoursEl.value);
+        var days = parseNum(daysEl.value);
+        var rate = parseNum(rateEl.value);
+
+        var dailyKwh = quantity * kw * hours;
+        var dailyCost = dailyKwh * rate;
+        var monthlyKwh = dailyKwh * days;
+        var monthlyCost = monthlyKwh * rate;
+
+        return {
+          name: (nameEl.value || '').replace(/^\s+|\s+$/g, '') || 'Custom Appliance',
+          quantity: quantity,
+          watts: watts,
+          kw: kw,
+          hours: hours,
+          days: days,
+          rate: rate,
+          dailyKwh: dailyKwh,
+          dailyCost: dailyCost,
+          monthlyKwh: monthlyKwh,
+          monthlyCost: monthlyCost
+        };
+      }
+
+      function updateSummary(){
+        var values = getCurrentValues();
+
+        kwEl.value = wattsEl.value.replace(/^\s+|\s+$/g, '') === '' ? '' : values.kw.toFixed(3);
+        dailyKwhEl.innerHTML = fmt(values.dailyKwh, 3) + ' kWh';
+        dailyCostEl.innerHTML = 'PHP ' + fmt(values.dailyCost, 2);
+        monthlyKwhEl.innerHTML = fmt(values.monthlyKwh, 3) + ' kWh';
+        monthlyCostEl.innerHTML = 'PHP ' + fmt(values.monthlyCost, 2);
+      }
+
+      function saveList(){
+        try{
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+        }catch(e){}
+      }
+
+      function renderTable(){
+        var i, row, tr, btns;
+        var totalMonthlyKwh = 0;
+        var totalMonthly = 0;
+        resultBody.innerHTML = '';
+
+        if (!saved.length) {
+          resultBody.innerHTML = '<tr class="saved-empty-row"><td colspan="9">NO SAVED APPLIANCE LIST YET.</td></tr>';
+        }
+
+        for (i = 0; i < saved.length; i++) {
+          row = saved[i];
+          totalMonthlyKwh += Number(row.monthlyKwh) || 0;
+          totalMonthly += Number(row.monthlyCost) || 0;
+
+          tr = document.createElement('tr');
+          tr.innerHTML =
+            '<td>' + escapeHtml(row.name) + '</td>' +
+            '<td>' + fmt(row.quantity, 0) + '</td>' +
+            '<td>' + fmt((Number(row.kw) || ((Number(row.watts) || 0) / 1000)), 3) + '</td>' +
+            '<td>' + fmt(row.hours, 2) + '</td>' +
+            '<td>' + fmt(row.days, 0) + '</td>' +
+            '<td>' + fmt(row.monthlyKwh, 3) + '</td>' +
+            '<td>PHP ' + fmt(row.rate, 2) + '</td>' +
+            '<td>PHP ' + fmt(row.monthlyCost, 2) + '</td>' +
+            '<td><button class="delete-btn" type="button" data-index="' + i + '">🗑</button></td>';
+          resultBody.appendChild(tr);
+        }
+
+        totalDailyKwhEl.innerHTML = fmt(totalMonthlyKwh, 3) + ' kWh';
+        totalMonthlyCostEl.innerHTML = 'PHP ' + fmt(totalMonthly, 2);
+
+        btns = resultBody.querySelectorAll('.delete-btn');
+        for (i = 0; i < btns.length; i++) {
+          btns[i].onclick = function () {
+            var idx = parseInt(this.getAttribute('data-index'), 10);
+            if (!isNaN(idx)) {
+              saved.splice(idx, 1);
+              saveList();
+              renderTable();
+            }
+          };
+        }
+      }
+
+      function loadList(){
+        try{
+          var raw = localStorage.getItem(STORAGE_KEY);
+          saved = raw ? JSON.parse(raw) : [];
+          if (!saved || !saved.length || Object.prototype.toString.call(saved) !== '[object Array]') {
+            saved = [];
+          }
+        }catch(e){
+          saved = [];
+        }
+        renderTable();
+      }
+
+      function loadPreset(){
+        var selected = presetEl.value;
+        var item;
+
+        if (selected === 'manual') {
+          clearInput();
+          return;
+        }
+
+        item = presets[Number(selected)];
+        if (!item) return;
+
+        nameEl.value = item.name;
+        quantityEl.value = String(item.quantity);
+        wattsEl.value = String(item.watts);
+        hoursEl.value = String(item.hours);
+        daysEl.value = String(item.days);
+        updateSummary();
+      }
+
+      function clearInput(){
+        presetEl.value = 'manual';
+        nameEl.value = '';
+        quantityEl.value = '1';
+        wattsEl.value = '';
+        hoursEl.value = '1';
+        daysEl.value = '30';
+        updateSummary();
+      }
+
+      function addCurrent(){
+        var values = getCurrentValues();
+        if (values.watts <= 0) {
+          alert('Please enter a Power Rating in Watts before adding.');
+          return;
+        }
+        saved.push({
+          name: values.name,
+          quantity: values.quantity,
+          watts: values.watts,
+          kw: values.kw,
+          hours: values.hours,
+          days: values.days,
+          rate: values.rate,
+          dailyKwh: values.dailyKwh,
+          dailyCost: values.dailyCost,
+          monthlyKwh: values.monthlyKwh,
+          monthlyCost: values.monthlyCost
+        });
+        saveList();
+        renderTable();
+      }
+
+      function bindInput(el){
+        if (!el) return;
+        el.oninput = updateSummary;
+        el.onchange = updateSummary;
+        el.onkeyup = updateSummary;
+      }
+
+      presetEl.onchange = loadPreset;
+      bindInput(quantityEl);
+      bindInput(wattsEl);
+      bindInput(hoursEl);
+      bindInput(daysEl);
+      bindInput(rateEl);
+
+      addBtn.onclick = addCurrent;
+      clearBtn.onclick = clearInput;
+      clearTableBtn.onclick = function () {
+        saved = [];
+        saveList();
+        renderTable();
+      };
+
+      updateSummary();
+      loadList();
+    })();
+  </script>
+</body>
+</html>
